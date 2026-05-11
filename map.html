@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ARCHITECTURE EXPLORER - FULLSCREEN</title>
+    
+    <!-- Leaflet CSS + JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #ffc6da 0%, #ffc0d0 100%);
+            overflow: hidden;
+            cursor: none;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-weight: 500;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* ========= SIDEBAR ========= */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: #2c2c2c;
+            backdrop-filter: blur(12px);
+            padding: 32px 20px;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            z-index: 200;
+            overflow-y: auto;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-weight: 500;
+            border-radius: 0 20px 20px 0;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar h2 {
+            font-size: 1.6rem;
+            font-weight: 500;
+            background: linear-gradient(135deg, #ffc6d9, #ff99cc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        
+        .sidebar-sub {
+            color: #ffc6d9;
+            font-size: 0.8rem;
+            font-weight: 500;
+            opacity: 0.9;
+            border-bottom: 1px solid #ffc6d9;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        #pattern-total-count {
+            font-weight: 500;
+            background: #3a3a3a;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #ffc6d9;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        #discovered-count {
+            font-weight: 500;
+            background: #3a3a3a;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #ffc6d9;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .discovered-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-item {
+            background: #3a3a3a;
+            border-radius: 16px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-left: 4px solid #ff99cc;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            cursor: pointer;
+        }
+
+        .sidebar-item:hover {
+            transform: translateX(4px);
+            background: #4a4a4a;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #ffc6d9;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .item-year {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #ffc6d9;
+        }
+
+        .close-sidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 153, 204, 0.2);
+            border: none;
+            font-size: 26px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff99cc;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .close-sidebar:hover {
+            background: #ff99cc;
+            color: #2c2c2c;
+            transform: scale(0.96);
+        }
+
+        /* ========= PATTERN SECTION STYLES ========= */
+        .pattern-section {
+            margin-bottom: 28px;
+        }
+        .pattern-title {
+            color: #ffc6d9;
+            font-size: 0.8rem;
+            font-weight: 500;
+            opacity: 0.9;
+            border-bottom: 1px solid #ffc6d9;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .pattern-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .pattern-item {
+            background: #3a3a3a;
+            border-radius: 16px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-left: 4px solid #ff99cc;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            cursor: pointer;
+        }
+        .pattern-item:hover {
+            background: #4a4a4a;
+            transform: translateX(4px);
+        }
+        .pattern-item.completed {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+        .pattern-name {
+            font-weight: 500;
+            color: #ffc6d9;
+            text-transform: uppercase;
+        }
+        .pattern-count {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #ffc6d9;
+        }
+        .pattern-item.completed .pattern-name,
+        .pattern-item.completed .pattern-count {
+            color: #a5d6a7;
+        }
+
+        /* ========= MAP STYLES ========= */
+        .map-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #leaflet-map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .custom-markers-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .architecture-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ff99cc;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.6, 1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 30;
+        }
+
+        .architecture-marker.revealed {
+            opacity: 1;
+            background: #ff66b2;
+            box-shadow: 0 0 0 2px rgba(255,102,178,0.4), 0 0 12px #ff66b2;
+            width: 14px;
+            height: 14px;
+        }
+
+        .architecture-marker.collected {
+            opacity: 1;
+            background: #ff66b2;
+            box-shadow: 0 0 0 2px rgba(255,102,178,0.4), 0 0 12px #ff66b2;
+            width: 14px;
+            height: 14px;
+        }
+
+        .architecture-marker.revealed:hover {
+            transform: translate(-50%, -50%) scale(1.4);
+            background: #ff88c2;
+        }
+
+        .marker-label {
+            position: absolute;
+            background: rgba(44, 44, 44, 0.95);
+            backdrop-filter: blur(8px);
+            color: #e0e0e0;
+            padding: 8px 14px;
+            border-radius: 28px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -140%);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 102, 178, 0.4);
+            z-index: 100;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .marker-label.visible {
+            opacity: 1;
+            transform: translate(-50%, -155%);
+        }
+
+        .marker-label .name {
+            font-weight: 700;
+            color: #ff99cc;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .marker-label .year {
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: #ff99bb;
+            margin-left: 8px;
+        }
+
+        .scanner {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ff66b2;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(255,102,178,0.12) 0%, rgba(255,102,178,0) 70%);
+            box-shadow: 0 0 12px #ff66b2, 0 0 20px rgba(255, 102, 178, 0.4);
+            transition: 0.02s linear;
+        }
+
+        .scanner::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 6px;
+            height: 6px;
+            background: #ff66b2;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #ff66b2;
+        }
+
+        .scan-wave {
+            position: absolute;
+            border-radius: 50%;
+            background: transparent;
+            border: 1.5px solid #ff66b2;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            animation: ping 1.2s infinite ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes ping {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .instructions {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44, 44, 44, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 8px 24px;
+            border-radius: 60px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #ff99cc;
+            letter-spacing: 0.3px;
+            border: 1px solid rgba(255, 102, 178, 0.3);
+            z-index: 200;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* Leaflet 컨트롤 버튼 스타일 */
+        .leaflet-control-pattern,
+        .leaflet-control-collection {
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            cursor: pointer;
+            text-align: center;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        .leaflet-control-pattern {
+            margin-bottom: 8px;
+        }
+        
+        .leaflet-control-pattern a,
+        .leaflet-control-collection a {
+            color: #ff99cc;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #3a3a3a;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        .leaflet-control-pattern a:hover,
+        .leaflet-control-collection a:hover {
+            background-color: #ff99cc;
+            color: #2c2c2c;
+        }
+
+        /* Leaflet 缩放按钮样式 */
+        .leaflet-control-zoom a {
+            background-color: #3a3a3a !important;
+            color: #ff99cc !important;
+            border: none !important;
+            transition: all 0.2s ease;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background-color: #ff99cc !important;
+            color: #2c2c2c !important;
+        }
+
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out {
+            border-radius: 4px !important;
+        }
+
+        .leaflet-control-zoom {
+            border: 1px solid rgba(255, 153, 204, 0.3) !important;
+            border-radius: 8px !important;
+            overflow: hidden;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #ffc6d9;
+            font-size: 0.8rem;
+            padding: 20px 0;
+            font-style: italic;
+            text-transform: uppercase;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-weight: 500;
+        }
+
+        /* ========= 建筑说明弹窗（含左右箭头导航 + FIND按钮） ========= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+            cursor: default;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            width: 500px;
+            height: 70vh;
+            max-height: 600px;
+            background: #2c2c2c;
+            border: 1px solid #4a4a4a;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: #2c2c2c;
+            border-bottom: 1px solid #4a4a4a;
+            flex-shrink: 0;
+        }
+
+        .modal-info-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-building-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffc6d9;
+            letter-spacing: 0.5px;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            text-transform: uppercase;
+            background: #3a3a3a;
+            padding: 6px 14px;
+            border-radius: 30px;
+        }
+
+        .modal-year {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ffc6d9;
+            background: #3a3a3a;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .modal-pattern {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ffc6d9;
+            background: #3a3a3a;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .modal-close {
+            background: #3a3a3a;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            color: #ffc6d9;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-close:hover {
+            background: #ff99cc;
+            color: #2c2c2c;
+        }
+
+        /* 左右箭头导航栏 */
+        .modal-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            background: #2c2c2c;
+            border-top: 1px solid #4a4a4a;
+            flex-shrink: 0;
+        }
+
+        .modal-prev,
+        .modal-next {
+            background: #3a3a3a;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 30px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #ffc6d9;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-prev:hover,
+        .modal-next:hover {
+            background: #ff99cc;
+            color: #2c2c2c;
+        }
+
+        .modal-counter {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #ffc6d9;
+            background: #3a3a3a;
+            padding: 4px 14px;
+            border-radius: 30px;
+        }
+
+        .modal-image-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #1e1e1e;
+        }
+
+        .modal-image-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+        }
+
+        /* FIND 按钮样式 */
+        .modal-find-btn {
+            background: #3a3a3a;
+            border: 1px solid #ff99cc;
+            border-radius: 30px;
+            padding: 8px 24px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ffc6d9;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            letter-spacing: 1px;
+            width: fit-content;
+            align-self: center;
+        }
+
+        .modal-find-btn:hover {
+            background: #ff99cc;
+            color: #2c2c2c;
+            transform: scale(1.02);
+        }
+
+        .modal-image-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-image-wrapper::-webkit-scrollbar-track {
+            background: #3a3a3a;
+            margin: 8px 0;
+        }
+
+        .modal-image-wrapper::-webkit-scrollbar-thumb {
+            background: #ff99cc;
+            border-radius: 4px;
+        }
+
+        .modal-image-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #ff66b2;
+        }
+
+        .modal-image-wrapper {
+            scrollbar-width: auto;
+            scrollbar-color: #ff99cc #3a3a3a;
+        }
+
+        .modal-image-error {
+            text-align: center;
+            padding: 40px 20px;
+            color: #ff99bb;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 临时高亮动画 */
+        .temp-highlight {
+            animation: pulse-animation 1s ease-out 3;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.8); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .modal-container { width: 90vw; height: 65vh; border-radius: 16px; }
+            .modal-building-name { font-size: 0.8rem; padding: 4px 10px; }
+            .modal-year { font-size: 0.7rem; padding: 4px 10px; }
+            .modal-pattern { font-size: 0.7rem; padding: 4px 10px; }
+            .modal-close { width: 28px; height: 28px; font-size: 16px; }
+            .modal-prev, .modal-next { width: 32px; height: 32px; font-size: 16px; }
+            .modal-counter { font-size: 0.7rem; padding: 3px 10px; }
+            .modal-header { padding: 16px 20px; }
+            .modal-nav { padding: 10px 20px; }
+            .modal-find-btn { padding: 6px 18px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="sidebar" id="sidebar">
+        <button class="close-sidebar" onclick="closeSidebar()">✕</button>
+        <h2>✦ ARCHIVE</h2>
+        
+        <div class="pattern-section">
+            <div class="pattern-title">
+                <span>DISCOVERED PATTERN</span>
+                <span id="pattern-total-count">0/4</span>
+            </div>
+            <div class="pattern-grid" id="pattern-grid"></div>
+        </div>
+
+        <div class="sidebar-sub">
+            <span>DISCOVERED LANDMARKS</span>
+            <span id="discovered-count">0/50</span>
+        </div>
+        <div id="discovered-list" class="discovered-grid">
+            <div class="empty-message">MOVE SCANNER OVER BUILDINGS<br>CLICK TO COLLECT</div>
+        </div>
+    </div>
+
+    <div class="map-container" id="mapContainer">
+        <div id="leaflet-map"></div>
+        <div class="custom-markers-overlay" id="markersOverlay"></div>
+    </div>
+</div>
+
+<div class="scanner" id="scanner"><div class="scan-wave"></div></div>
+<div class="instructions">DRAG & CLICK TO COLLECT</div>
+
+<!-- 建筑说明弹窗（含左右箭头导航 + FIND按钮） -->
+<div class="modal-overlay" id="buildingModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-info-group">
+                <span class="modal-building-name" id="modalBuildingName">BUILDING</span>
+                <span class="modal-year" id="modalBuildingYear">YEAR</span>
+                <span class="modal-pattern" id="modalBuildingPattern">PATTERN</span>
+            </div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-image-wrapper" id="modalImageWrapper">
+            <div class="modal-image-container">
+                <img id="modalImage" class="modal-image" src="" alt="Building Info">
+            </div>
+            <button class="modal-find-btn" id="modalFindBtn">FIND</button>
+        </div>
+        <div class="modal-nav" id="modalNav" style="display: none;">
+            <button class="modal-prev" id="modalPrev">◀</button>
+            <span class="modal-counter" id="modalCounter">1 / 1</span>
+            <button class="modal-next" id="modalNext">▶</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ============================================================
+        // Pattern 分类
+        // ============================================================
+        const patternsData = [
+            { 
+                name: "SYMMETRY & TESSELATION", 
+                totalCount: 15,
+                buildingNames: [
+                    "Taj Mahal", "Parthenon", "Snowflake Motel", "Pantheon", "Al Bahar Towers",
+                    "Forbidden City", "Louvre Pyramid", 
+                    "Milwaukee Art Museum", "Apple Park", "ArtScience Museum", "Metropol Parasol",
+                    "Esplanade - Theatres on the Bay", "Masdar City","Casa Batlló","Seattle Central Library",
+                ]
+            },
+            { 
+                name: "SPIRAL & CURVE", 
+                totalCount: 16,
+                buildingNames: [
+                    "Guggenheim Museum", "Helix Bridge", "Turning Torso","Shanghai Tower",
+                    "Cayan Tower", "City Hall London", "BMW Welt", "Galaxy SOHO", 
+                    "Heydar Aliyev Center", "Harbin Opera House", "Sydney Opera House",
+                    "Torre Agbar", "Phoenix International Media Center", "Casa Milà", "Fondation Louis Vuitton", "Walt Disney Concert Hall",
+                ]
+            },
+            { 
+                name: "BUBBLE & CELL", 
+                totalCount: 10,
+                buildingNames: [
+                    "Beijing National Aquatics Center", "Eden Project", "Vessel", "The National Taichung Theater",
+                    "Selfridges Birmingham",
+                    "DDP Seoul", "The Gherkin","Allianz Arena","Museo Soumaya","Kunsthaus Graz",
+                ]
+            },
+            { 
+                name: "BRANCH & FRACTAL", 
+                totalCount: 9,
+                buildingNames: [
+                    "Eiffel Tower", "Federation Square", "Khan Shatyr",
+                    "Lotus Building Wujin", "Supertree Grove", "Lotus Temple",
+                    "Sagrada Família", "National Stadium Beijing", "Burj Khalifa"
+                ]
+            }
+        ];
+        
+        // 构建建筑名称到Pattern的映射
+        const buildingToPatternMap = new Map();
+        patternsData.forEach(pattern => {
+            pattern.buildingNames.forEach(buildingName => {
+                buildingToPatternMap.set(buildingName, pattern.name);
+            });
+        });
+        
+        // ============================================================
+        // 建筑数据（50个地标）
+        // ============================================================
+        const buildingsData = [
+            { name: "Eiffel Tower", year: "1887", lat: 48.8584, lng: 2.2945 },
+            { name: "Louvre Pyramid", year: "1985", lat: 48.8606, lng: 2.3358 },
+            { name: "Sagrada Família", year: "1882", lat: 41.4036, lng: 2.1744 },
+            { name: "Casa Batlló", year: "1904", lat: 41.3917, lng: 2.1650 },
+            { name: "Casa Milà", year: "1906", lat: 41.3950, lng: 2.1647 },
+            { name: "Torre Agbar", year: "1999", lat: 41.4031, lng: 2.1907 },
+            { name: "The Gherkin", year: "2001", lat: 51.5145, lng: -0.0804 },
+            { name: "City Hall London", year: "1998", lat: 51.5148, lng: -0.0754 },
+            { name: "Parthenon", year: "447 BC", lat: 37.9715, lng: 23.7266 },
+            { name: "Pantheon", year: "126 AD", lat: 41.8986, lng: 12.4769 },
+            { name: "Turning Torso", year: "2001", lat: 55.6119, lng: 12.9729 },
+            { name: "Allianz Arena", year: "2002", lat: 48.2188, lng: 11.6245 },
+            { name: "BMW Welt", year: "2003", lat: 48.1768, lng: 11.5578 },
+            { name: "Kunsthaus Graz", year: "1999", lat: 47.0719, lng: 15.4426 },
+            { name: "Metropol Parasol", year: "2005", lat: 37.3927, lng: -5.9913 },
+            { name: "Eden Project", year: "1998", lat: 50.3617, lng: -4.7444 },
+            { name: "Selfridges Birmingham", year: "1999", lat: 52.4778, lng: -1.8946 },
+            { name: "Forbidden City", year: "1406", lat: 39.9163, lng: 116.3974 },
+            { name: "National Stadium Beijing", year: "2003", lat: 39.9915, lng: 116.3973 },
+            { name: "Water Cube", year: "2003", lat: 39.9965, lng: 116.3933 },
+            { name: "Galaxy SOHO", year: "2009", lat: 39.9167, lng: 116.4583 },
+            { name: "Shanghai Tower", year: "2008", lat: 31.2355, lng: 121.5014 },
+            { name: "DDP Seoul", year: "2009", lat: 37.5668, lng: 127.0091 },
+            { name: "Harbin Opera House", year: "2010", lat: 45.7749, lng: 126.6305 },
+            { name: "The National Taichung Theater", year: "2005", lat: 24.1631, lng: 120.6469 },
+            { name: "Taj Mahal", year: "1632", lat: 27.1750, lng: 78.0421 },
+            { name: "Lotus Temple", year: "1980", lat: 28.5535, lng: 77.2588 },
+            { name: "Burj Khalifa", year: "2010", lat: 25.1972, lng: 55.2742 },
+            { name: "Cayan Tower", year: "2006", lat: 25.1960, lng: 55.2722 },
+            { name: "Khan Shatyr", year: "2006", lat: 51.1694, lng: 71.3916 },
+            { name: "Heydar Aliyev Center", year: "2007", lat: 40.3955, lng: 49.8673 },
+            { name: "Esplanade - Theatres on the Bay", year: "1996", lat: 1.326, lng: 103.8568 },
+            { name: "ArtScience Museum", year: "2006", lat: 1.2882, lng: 103.8518 },
+            { name: "Supertree Grove", year: "2006", lat: 1.2811, lng: 103.8635 },
+            { name: "Helix Bridge", year: "2007", lat: 1.2898, lng: 103.8642 },
+            { name: "Guggenheim Museum", year: "1943", lat: 40.7829, lng: -73.9590 },
+            { name: "Vessel", year: "2017", lat: 40.7480, lng: -74.0020 },
+            { name: "Snowflake Motel", year: "1960", lat: 36.1750, lng: -114.0734 },
+            { name: "Milwaukee Art Museum", year: "1994", lat: 43.0399, lng: -87.8967 },
+            { name: "Seattle Central Library", year: "1998", lat: 47.6062, lng: -122.3321 },
+            { name: "Walt Disney Concert Hall", year: "1999", lat: 34.0549, lng: -118.2500 },
+            { name: "Apple Park", year: "2013", lat: 37.3348, lng: -122.0093 },
+            { name: "Museo Soumaya", year: "2011", lat: 19.4406, lng: -99.2047 },
+            { name: "Sydney Opera House", year: "1959", lat: -33.8568, lng: 151.2153 },
+            { name: "Federation Square", year: "1997", lat: -37.8183, lng: 144.9680 },
+            { name: "Beijing National Aquatics Center", year: "2003", lat: 39.9965, lng: 116.3933 },
+            { name: "Lotus Building Wujin", year: "2010", lat: 31.7029, lng: 119.9649 },
+            { name: "Phoenix International Media Center", year: "2011", lat: 39.9042, lng: 116.4074 },
+            { name: "Masdar City", year: "2006", lat: 24.2184, lng: 54.6242 },
+            { name: "Al Bahar Towers", year: "2012", lat: 24.4186, lng: 54.4346 },
+            { name: "Fondation Louis Vuitton", year: "2006", lat: 48.8774, lng: 2.2635 }
+        ];
+        
+        // 建筑图片基础路径
+        const BUILDING_IMAGE_BASE_PATH = 'images/buildings/';
+        
+        function getBuildingImageFileName(name) {
+            return name.toLowerCase()
+                .replace(/[áàâãäå]/g, 'a')
+                .replace(/[éèêë]/g, 'e')
+                .replace(/[íìîï]/g, 'i')
+                .replace(/[óòôõö]/g, 'o')
+                .replace(/[úùûü]/g, 'u')
+                .replace(/ç/g, 'c')
+                .replace(/ñ/g, 'n')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '_') + '.jpg';
+        }
+        
+        // 获取建筑所属的Pattern名称
+        function getBuildingPatternName(buildingName) {
+            return buildingToPatternMap.get(buildingName) || "UNKNOWN PATTERN";
+        }
+        
+        // 辅助函数：将年份转换为可排序的数字
+        function parseYearToNumber(yearStr) {
+            if (yearStr.includes("BC")) return -parseInt(yearStr);
+            if (yearStr.includes("AD")) return parseInt(yearStr);
+            return parseInt(yearStr);
+        }
+        
+        // ============================================================
+        // 弹窗功能（支持单个建筑和Pattern画廊模式）
+        // ============================================================
+        const modalOverlay = document.getElementById('buildingModal');
+        const modalBuildingName = document.getElementById('modalBuildingName');
+        const modalBuildingYear = document.getElementById('modalBuildingYear');
+        const modalBuildingPattern = document.getElementById('modalBuildingPattern');
+        const modalImage = document.getElementById('modalImage');
+        const modalImageWrapper = document.getElementById('modalImageWrapper');
+        const modalImageContainer = document.querySelector('.modal-image-container');
+        const modalNav = document.getElementById('modalNav');
+        const modalPrev = document.getElementById('modalPrev');
+        const modalNext = document.getElementById('modalNext');
+        const modalCounter = document.getElementById('modalCounter');
+        const modalFindBtn = document.getElementById('modalFindBtn');
+        
+        let currentBuildingsList = [];      // 当前画廊的建筑列表
+        let currentIndex = 0;               // 当前索引
+        let isCarouselMode = false;          // 是否为画廊模式
+        let currentFindBuildingName = '';    // 当前可查找的建筑名称
+        let currentFindBuildingLat = null;   // 当前可查找的建筑纬度
+        let currentFindBuildingLng = null;   // 当前可查找的建筑经度
+        
+        function updateModalContent() {
+            if (currentBuildingsList.length === 0) return;
+            const building = currentBuildingsList[currentIndex];
+            modalBuildingName.textContent = building.name.toUpperCase();
+            modalBuildingYear.textContent = building.year;
+            modalBuildingPattern.textContent = getBuildingPatternName(building.name);
+            modalCounter.textContent = `${currentIndex + 1} / ${currentBuildingsList.length}`;
+            
+            // 更新 FIND 按钮对应的建筑信息
+            currentFindBuildingName = building.name;
+            const buildingData = buildingsData.find(b => b.name === building.name);
+            if (buildingData) {
+                currentFindBuildingLat = buildingData.lat;
+                currentFindBuildingLng = buildingData.lng;
+            } else {
+                currentFindBuildingLat = null;
+                currentFindBuildingLng = null;
+            }
+            
+            const imageFileName = getBuildingImageFileName(building.name);
+            const imagePath = BUILDING_IMAGE_BASE_PATH + imageFileName;
+            modalImage.src = imagePath;
+            modalImage.alt = building.name;
+            
+            modalImage.onerror = () => {
+                modalImageContainer.innerHTML = `<div class="modal-image-error">📷 ${building.name.toUpperCase()}<br>建筑图片准备中<br>请将图片放入 ${BUILDING_IMAGE_BASE_PATH}<br><br>文件名应为: ${imageFileName}</div>`;
+                modalImage.style.display = 'none';
+            };
+            
+            modalImage.onload = () => {
+                modalImageContainer.innerHTML = '';
+                modalImageContainer.appendChild(modalImage);
+                modalImage.style.display = 'block';
+                modalImageWrapper.scrollTop = 0;
+            };
+        }
+        
+        // 查找建筑：关闭弹窗，移动到建筑位置并高亮
+        function findBuildingOnMap() {
+            if (!currentFindBuildingLat || !currentFindBuildingLng) {
+                console.warn('建筑位置信息不存在');
+                return;
+            }
+            
+            // 关闭弹窗
+            closeModal();
+            
+            // 移动地图到建筑位置（设置合适的缩放级别）
+            map.setView([currentFindBuildingLat, currentFindBuildingLng], 12);
+            
+            // 获取对应的 marker 元素并添加高亮动画
+            const markerElement = markerElementsMap.get(currentFindBuildingName);
+            if (markerElement) {
+                markerElement.classList.add('temp-highlight');
+                setTimeout(() => {
+                    markerElement.classList.remove('temp-highlight');
+                }, 3000);
+            }
+        }
+        
+        // 显示单个建筑（普通模式，无箭头，有FIND按钮）
+        function showBuildingModal(buildingName, buildingYear) {
+            currentBuildingsList = [{ name: buildingName, year: buildingYear, yearNum: parseYearToNumber(buildingYear) }];
+            currentIndex = 0;
+            isCarouselMode = false;
+            modalNav.style.display = 'none';
+            updateModalContent();
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 显示Pattern画廊（带左右箭头 + FIND按钮）
+        function showPatternGallery(patternName, buildingNames) {
+            if (!buildingNames || buildingNames.length === 0) return;
+            
+            // 获取建筑详细信息并按年份排序（旧的在前）
+            currentBuildingsList = buildingNames.map(name => {
+                const building = buildingsData.find(b => b.name === name);
+                return { name, year: building?.year || 'N/A', yearNum: parseYearToNumber(building?.year || '0') };
+            }).sort((a, b) => a.yearNum - b.yearNum);
+            
+            currentIndex = 0;
+            isCarouselMode = true;
+            modalNav.style.display = 'flex';
+            updateModalContent();
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function prevBuilding() {
+            if (currentBuildingsList.length === 0) return;
+            currentIndex = (currentIndex - 1 + currentBuildingsList.length) % currentBuildingsList.length;
+            updateModalContent();
+        }
+        
+        function nextBuilding() {
+            if (currentBuildingsList.length === 0) return;
+            currentIndex = (currentIndex + 1) % currentBuildingsList.length;
+            updateModalContent();
+        }
+        
+        window.closeModal = function() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            currentBuildingsList = [];
+            isCarouselMode = false;
+        };
+        
+        modalPrev.addEventListener('click', prevBuilding);
+        modalNext.addEventListener('click', nextBuilding);
+        modalFindBtn.addEventListener('click', findBuildingOnMap);
+        
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) closeModal();
+        });
+        document.addEventListener('keydown', function(e) {
+            if (modalOverlay.classList.contains('active')) {
+                if (e.key === 'Escape') closeModal();
+                if (isCarouselMode && e.key === 'ArrowLeft') prevBuilding();
+                if (isCarouselMode && e.key === 'ArrowRight') nextBuilding();
+            }
+        });
+        
+        // ============================================================
+        // 地图初始化
+        // ============================================================
+        const map = L.map('leaflet-map', {
+            center: [20, 0],
+            zoom: 2.7,
+            zoomControl: true,
+            fadeAnimation: false,
+            zoomAnimation: false,
+            markerZoomAnimation: true,
+            maxBoundsViscosity: 1.0
+        });
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; OSM & CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 10.0,
+            minZoom: 2.7,
+            noWrap: true
+        }).addTo(map);
+        
+        map.setMinZoom(2.7);
+        map.setMaxZoom(10.0);
+        
+        const strictBounds = L.latLngBounds(L.latLng(-60, -170), L.latLng(85, 170));
+        map.setMaxBounds(strictBounds);
+        map.on('move', function() { map.panInsideBounds(strictBounds, { animate: false }); });
+        
+        // 控制按钮
+        const PatternControl = L.Control.extend({
+            options: { position: 'bottomleft' },
+            onAdd: function() {
+                const container = L.DomUtil.create('div', 'leaflet-control-pattern');
+                const link = L.DomUtil.create('a', '', container);
+                link.innerHTML = 'PATTERN';
+                link.href = '#';
+                link.onclick = (e) => { L.DomEvent.stopPropagation(e); window.location.href = 'index.html'; };
+                return container;
+            }
+        });
+        map.addControl(new PatternControl());
+        
+        const CollectionControl = L.Control.extend({
+            options: { position: 'bottomleft' },
+            onAdd: function() {
+                const container = L.DomUtil.create('div', 'leaflet-control-collection');
+                const link = L.DomUtil.create('a', '', container);
+                link.innerHTML = 'COLLECTION';
+                link.href = '#';
+                link.onclick = (e) => { L.DomEvent.stopPropagation(e); toggleSidebar(); };
+                return container;
+            }
+        });
+        map.addControl(new CollectionControl());
+        
+        // 全局变量
+        const scanner = document.getElementById('scanner');
+        const markersOverlay = document.getElementById('markersOverlay');
+        const sidebar = document.getElementById('sidebar');
+        const discoveredList = document.getElementById('discovered-list');
+        const discoveredCountSpan = document.getElementById('discovered-count');
+        const patternGrid = document.getElementById('pattern-grid');
+        const patternTotalSpan = document.getElementById('pattern-total-count');
+        const SCAN_RADIUS = 22;
+        
+        let discoveredBuildings = new Set();
+        let discoveredBuildingsList = [];
+        let markerElementsMap = new Map();
+        let patternElements = [];
+        let updateTimeout = null;
+        
+        function refreshSortedLandmarksList() {
+            discoveredBuildingsList.sort((a, b) => parseYearToNumber(a.year) - parseYearToNumber(b.year));
+            discoveredList.innerHTML = '';
+            if (discoveredBuildingsList.length === 0) {
+                discoveredList.innerHTML = '<div class="empty-message">MOVE SCANNER OVER BUILDINGS<br>CLICK TO COLLECT</div>';
+            } else {
+                discoveredBuildingsList.forEach(building => {
+                    const div = document.createElement('div');
+                    div.className = 'sidebar-item';
+                    div.innerHTML = `<span class="item-name">${building.name.toUpperCase()}</span><span class="item-year">${building.year}</span>`;
+                    div.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showBuildingModal(building.name, building.year);
+                    });
+                    discoveredList.appendChild(div);
+                });
+            }
+        }
+        
+        function getCollectedCountForPattern(patternIdx) {
+            const buildingSet = new Set(patternsData[patternIdx].buildingNames);
+            let count = 0;
+            for (let name of buildingSet) {
+                if (discoveredBuildings.has(name)) count++;
+            }
+            return count;
+        }
+        
+        function updatePatternCompletion() {
+            let totalCompleted = 0;
+            for (let i = 0; i < patternsData.length; i++) {
+                const total = patternsData[i].totalCount;
+                const collected = getCollectedCountForPattern(i);
+                const isCompleted = (collected === total);
+                if (isCompleted) totalCompleted++;
+                if (patternElements[i]) {
+                    patternElements[i].countSpan.textContent = `${collected}/${total}`;
+                    if (isCompleted) patternElements[i].element.classList.add('completed');
+                    else patternElements[i].element.classList.remove('completed');
+                }
+            }
+            patternTotalSpan.textContent = `${totalCompleted}/${patternsData.length}`;
+        }
+        
+        function createPatternUI() {
+            patternGrid.innerHTML = '';
+            patternElements = [];
+            patternsData.forEach((pattern, idx) => {
+                const collected = getCollectedCountForPattern(idx);
+                const isCompleted = (collected === pattern.totalCount);
+                const div = document.createElement('div');
+                div.className = 'pattern-item' + (isCompleted ? ' completed' : '');
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'pattern-name';
+                nameSpan.textContent = pattern.name;
+                const countSpan = document.createElement('span');
+                countSpan.className = 'pattern-count';
+                countSpan.textContent = `${collected}/${pattern.totalCount}`;
+                div.appendChild(nameSpan);
+                div.appendChild(countSpan);
+                div.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showPatternGallery(pattern.name, pattern.buildingNames);
+                });
+                patternGrid.appendChild(div);
+                patternElements.push({ element: div, countSpan: countSpan, idx });
+            });
+            updatePatternCompletion();
+        }
+        
+        function updateSidebarUI() {
+            discoveredCountSpan.innerText = discoveredBuildings.size + '/50';
+            updatePatternCompletion();
+        }
+        
+        function addToCollection(marker, name, year) {
+            if (discoveredBuildings.has(name)) return false;
+            discoveredBuildings.add(name);
+            discoveredBuildingsList.push({ name: name, year: year });
+            marker.classList.add('collected');
+            marker.classList.add('revealed');
+            const label = marker.querySelector('.marker-label');
+            if (label) label.remove();
+            refreshSortedLandmarksList();
+            updateSidebarUI();
+            return true;
+        }
+        
+        function showFloatingLabel(marker) {
+            if (marker.classList.contains('collected')) return;
+            let label = marker.querySelector('.marker-label');
+            if (!label) {
+                label = document.createElement('div');
+                label.className = 'marker-label';
+                label.innerHTML = `<span class="name">${marker.dataset.name.toUpperCase()}</span><span class="year">${marker.dataset.year}</span>`;
+                marker.appendChild(label);
+            }
+            label.classList.add('visible');
+        }
+        
+        function hideFloatingLabel(marker) {
+            const label = marker.querySelector('.marker-label');
+            if (label) label.classList.remove('visible');
+        }
+        
+        function updateAllMarkersPosition() {
+            for (let [id, marker] of markerElementsMap.entries()) {
+                const lat = parseFloat(marker.dataset.lat);
+                const lng = parseFloat(marker.dataset.lng);
+                const point = map.latLngToContainerPoint([lat, lng]);
+                marker.style.left = point.x + 'px';
+                marker.style.top = point.y + 'px';
+            }
+        }
+        
+        function throttledUpdateMarkers() {
+            if (updateTimeout) return;
+            updateTimeout = requestAnimationFrame(() => {
+                updateAllMarkersPosition();
+                updateTimeout = null;
+            });
+        }
+        
+        function updateMarkersByScanner(mouseX, mouseY) {
+            for (let [id, marker] of markerElementsMap.entries()) {
+                if (marker.classList.contains('collected')) continue;
+                const rect = marker.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const distance = Math.hypot(mouseX - centerX, mouseY - centerY);
+                if (distance < SCAN_RADIUS) {
+                    marker.classList.add('revealed');
+                    showFloatingLabel(marker);
+                } else {
+                    marker.classList.remove('revealed');
+                    hideFloatingLabel(marker);
+                }
+            }
+        }
+        
+        function onMarkerClick(e) {
+            e.stopPropagation();
+            const marker = e.currentTarget;
+            const name = marker.dataset.name;
+            const year = marker.dataset.year;
+            if (!marker.classList.contains('revealed') && !marker.classList.contains('collected')) {
+                const tip = document.createElement('div');
+                tip.innerText = "MOVE SCANNER OVER BUILDING FIRST!";
+                tip.style.cssText = "position:fixed; background:#2c2c2c; padding:4px 12px; border-radius:40px; font-size:12px; color:#ff99cc; z-index:9999; pointer-events:none; font-family:'Inter',sans-serif;";
+                tip.style.left = (e.clientX + 20) + "px";
+                tip.style.top = (e.clientY - 20) + "px";
+                document.body.appendChild(tip);
+                setTimeout(() => tip.remove(), 800);
+                return;
+            }
+            const added = addToCollection(marker, name, year);
+            if (added) {
+                marker.style.transform = "translate(-50%, -50%) scale(1.2)";
+                setTimeout(() => { if(marker) marker.style.transform = ""; }, 150);
+                hideFloatingLabel(marker);
+                if (discoveredBuildings.size === 1) sidebar.classList.add('active');
+                else if (!sidebar.classList.contains('active')) sidebar.classList.add('active');
+            } else {
+                showBuildingModal(name, year);
+            }
+        }
+        
+        function createAllMarkers() {
+            markersOverlay.innerHTML = '';
+            markerElementsMap.clear();
+            buildingsData.forEach(b => {
+                const markerDiv = document.createElement('div');
+                markerDiv.className = 'architecture-marker';
+                if (discoveredBuildings.has(b.name)) {
+                    markerDiv.classList.add('collected', 'revealed');
+                }
+                markerDiv.dataset.name = b.name;
+                markerDiv.dataset.year = b.year;
+                markerDiv.dataset.lat = b.lat;
+                markerDiv.dataset.lng = b.lng;
+                const point = map.latLngToContainerPoint([b.lat, b.lng]);
+                markerDiv.style.left = point.x + 'px';
+                markerDiv.style.top = point.y + 'px';
+                markerDiv.addEventListener('click', onMarkerClick);
+                markersOverlay.appendChild(markerDiv);
+                markerElementsMap.set(b.name, markerDiv);
+            });
+        }
+        
+        map.on('moveend', throttledUpdateMarkers);
+        map.on('zoomend', throttledUpdateMarkers);
+        window.addEventListener('resize', throttledUpdateMarkers);
+        
+        createAllMarkers();
+        throttledUpdateMarkers();
+        createPatternUI();
+        updateSidebarUI();
+        
+        let scanFramePending = false;
+        let lastMouseX = 0, lastMouseY = 0;
+        
+        function handleMouseMove(e) {
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            scanner.style.left = lastMouseX + 'px';
+            scanner.style.top = lastMouseY + 'px';
+            if (!scanFramePending) {
+                scanFramePending = true;
+                requestAnimationFrame(() => {
+                    updateMarkersByScanner(lastMouseX, lastMouseY);
+                    scanFramePending = false;
+                });
+            }
+        }
+        document.addEventListener('mousemove', handleMouseMove);
+        
+        function handleTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            if(touch) {
+                scanner.style.left = touch.clientX + 'px';
+                scanner.style.top = touch.clientY + 'px';
+                updateMarkersByScanner(touch.clientX, touch.clientY);
+            }
+        }
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        
+        function toggleSidebar() { sidebar.classList.toggle('active'); }
+        window.closeSidebar = function() { sidebar.classList.remove('active'); };
+        
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('active')) {
+                const isSidebar = sidebar.contains(e.target);
+                const isMarker = e.target.classList?.contains('architecture-marker');
+                const isCollectionBtn = e.target.closest('.leaflet-control-collection');
+                const isPatternBtn = e.target.closest('.leaflet-control-pattern');
+                const isSidebarItem = e.target.closest('.sidebar-item');
+                const isPatternItem = e.target.closest('.pattern-item');
+                if (!isSidebar && !isMarker && !isCollectionBtn && !isPatternBtn && !isSidebarItem && !isPatternItem) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+        
+        console.log("✅ Pattern画廊已添加FIND按钮 | 点击后关闭弹窗并在地图上定位高亮建筑");
+    })();
+</script>
+</body>
+</html>

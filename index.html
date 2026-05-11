@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ARCHITECTURE EXPLORER - FULLSCREEN</title>
-    
-    <!-- Leaflet CSS + JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+    <title>ARCHITECTURE EXPLORER - LANDING</title>
     <style>
         * {
             margin: 0;
@@ -20,890 +15,677 @@
         body {
             background: linear-gradient(145deg, #ffc6da 0%, #ffc0d0 100%);
             overflow: hidden;
-            cursor: none;
             font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
             font-weight: 500;
             height: 100vh;
             width: 100vw;
-        }
-
-        .container {
-            width: 100%;
-            height: 100%;
             position: relative;
+            cursor: default;
         }
 
-        /* ========= SIDEBAR ========= */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 300px;
-            height: 100vh;
-            background: rgba(49, 49, 49, 0.96);
-            backdrop-filter: blur(12px);
-            padding: 32px 20px;
-            transform: translateX(-100%);
-            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            z-index: 200;
-            overflow-y: auto;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            font-weight: 500;
-        }
-
-        .sidebar.active {
-            transform: translateX(0);
-        }
-
-        .sidebar h2 {
-            font-size: 1.6rem;
-            font-weight: 500;
-            background: linear-gradient(135deg, #ffc6d9, #ffc6d9);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 8px;
-            letter-spacing: -0.3px;
-        }
-        
-        .sidebar-sub {
-            color: #ffc6d9;
-            font-size: 0.8rem;
-            font-weight: 500;
-            opacity: 0.8;
-            border-bottom: 1px solid #ffc6d9;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-
-        #pattern-total-count {
-            font-weight: 500;
-            background: #ffd9e8;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            color: #b01070;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
-        #discovered-count {
-            font-weight: 500;
-            background: #ffd9e8;
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            color: #b01070;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
-        .discovered-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .sidebar-item {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 10px 16px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #ffdfea;
-            border-left: 4px solid #ff99cc;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            backdrop-filter: blur(4px);
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
-        .sidebar-item:hover {
-            transform: translateX(4px);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .item-name {
-            font-weight: 500;
-            color: #ffb3cc;
-            text-transform: uppercase;
-        }
-
-        .item-year {
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: #ff99bb;
-        }
-
-        .close-sidebar {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(199, 21, 133, 0.1);
-            border: none;
-            font-size: 26px;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #c71585;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
-        .close-sidebar:hover {
-            background: #ff1493;
-            color: white;
-            transform: scale(0.96);
-        }
-
-        /* ========= PATTERN SECTION STYLES ========= */
-        .pattern-section {
-            margin-bottom: 28px;
-        }
-        .pattern-title {
-            color: #ffc6d9;
-            font-size: 0.8rem;
-            font-weight: 500;
-            opacity: 0.8;
-            border-bottom: 1px solid #ffc6d9;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-        .pattern-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .pattern-item {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 10px 16px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #ffdfea;
-            border-left: 4px solid #ff99cc;
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        .pattern-item.completed {
-            border-left-color: #4caf50;
-            background: rgba(76, 175, 80, 0.2);
-        }
-        .pattern-name {
-            font-weight: 500;
-            color: #ffb3cc;
-            text-transform: uppercase;
-        }
-        .pattern-count {
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: #ff99bb;
-        }
-        .pattern-item.completed .pattern-name,
-        .pattern-item.completed .pattern-count {
-            color: #a5d6a7;
-        }
-
-        /* ========= MAP STYLES ========= */
-        .map-container {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #leaflet-map {
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        .custom-markers-overlay {
+        .photo-gallery {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 10;
-            pointer-events: none;
-        }
-
-        .architecture-marker {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: #ff99cc;
-            border: 2px solid white;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0;
+            overflow: hidden;
             pointer-events: auto;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.6, 1.1);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            z-index: 30;
         }
 
-        .architecture-marker.revealed {
-            opacity: 1;
-            background: #ff1493;
-            box-shadow: 0 0 0 2px rgba(255,20,147,0.4), 0 0 12px #ff66b2;
-            width: 14px;
-            height: 14px;
-        }
-
-        .architecture-marker.collected {
-            opacity: 1;
-            background: #ff1493;
-            box-shadow: 0 0 0 2px rgba(255,20,147,0.4), 0 0 12px #ff66b2;
-            width: 14px;
-            height: 14px;
-        }
-
-        .architecture-marker.revealed:hover {
-            transform: translate(-50%, -50%) scale(1.4);
-            background: #ff4da6;
-        }
-
-        .marker-label {
+        .photo-card {
             position: absolute;
-            background: rgba(255, 248, 250, 0.98);
-            backdrop-filter: blur(8px);
-            color: #2c1a24;
-            padding: 8px 14px;
-            border-radius: 28px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, -140%);
-            transition: opacity 0.15s ease, transform 0.15s ease;
-            box-shadow: 0 5px 15px rgba(199, 21, 133, 0.2);
-            border: 1px solid rgba(255, 20, 147, 0.4);
-            z-index: 100;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            width: 170px;
+            height: 220px;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.35);
+            cursor: grab;
+            transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1), box-shadow 0.2s ease;
+            will-change: transform;
+            background: rgba(255, 240, 245, 0.92);
+            backdrop-filter: blur(2px);
+            pointer-events: auto;
         }
 
-        .marker-label.visible {
+        .photo-card:active {
+            cursor: grabbing;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.03) rotate(0.5deg);
+            box-shadow: 0 18px 36px rgba(199, 21, 133, 0.3), 0 0 0 2px rgba(255, 105, 180, 0.6);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+        }
+
+        .photo-card .front-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             opacity: 1;
-            transform: translate(-50%, -155%);
+            transition: opacity 0.28s ease-in-out;
         }
 
-        .marker-label .name {
-            font-weight: 700;
-            color: #c71585;
-            font-size: 0.8rem;
-            text-transform: uppercase;
+        /* 只对前21张卡片启用 hover 切换效果 */
+        .photo-card.hover-enabled .hover-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.28s ease-in-out;
         }
 
-        .marker-label .year {
-            font-size: 0.65rem;
-            font-weight: 500;
-            color: #c96a92;
-            margin-left: 8px;
+        .photo-card.hover-enabled:hover .front-img {
+            opacity: 0;
         }
 
-        .scanner {
-            position: fixed;
-            width: 40px;
-            height: 40px;
-            border: 2px solid #ff66b2;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1000;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(255,20,147,0.12) 0%, rgba(255,20,147,0) 70%);
-            box-shadow: 0 0 12px #ff66b2, 0 0 20px rgba(255, 20, 147, 0.4);
-            transition: 0.02s linear;
+        .photo-card.hover-enabled:hover .hover-img {
+            opacity: 1;
         }
 
-        .scanner::after {
-            content: '';
+        .photo-card:not(.hover-enabled) .hover-img {
+            display: none;
+        }
+
+        .start-button-container {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 6px;
-            height: 6px;
-            background: #ff1493;
-            border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px #ff66b2;
+            z-index: 100;
+            pointer-events: auto;
+            text-align: center;
+            filter: drop-shadow(0 0 12px rgba(199, 21, 133, 0.25));
         }
 
-        .scan-wave {
-            position: absolute;
-            border-radius: 50%;
-            background: transparent;
-            border: 1.5px solid #ff66b2;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            animation: ping 1.2s infinite ease-out;
-            pointer-events: none;
-        }
-
-        @keyframes ping {
-            0% { transform: scale(0.9); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-
-        .instructions {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 220, 235, 0.85);
-            backdrop-filter: blur(8px);
+        .start-btn {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1.8px solid #ff99cc;
             padding: 8px 24px;
-            border-radius: 60px;
-            font-size: 0.8rem;
-            font-weight: 500;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1.8px;
             color: #b01070;
-            letter-spacing: 0.3px;
-            border: 1px solid rgba(199,21,133,0.3);
-            z-index: 200;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            pointer-events: none;
             white-space: nowrap;
         }
 
-        /* Leaflet 컨트롤 버튼 스타일 - COLLECTION 버튼 */
-        .leaflet-control-collection {
-            background-color: white;
-            border-radius: 4px;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-            cursor: pointer;
-            text-align: center;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        .leaflet-control-collection a {
+        .start-btn:hover {
+            background: rgba(255, 255, 255, 0.85);
             color: #c71585;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: white;
-            transition: all 0.2s ease;
-            border-radius: 4px;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        .leaflet-control-collection a:hover {
-            background-color: #ff1493;
-            color: white;
+            border-color: #ff66b2;
+            transform: scale(1.04);
+            box-shadow: 0 0 16px rgba(255, 20, 147, 0.3);
+            letter-spacing: 2px;
         }
 
-        .empty-message {
-            text-align: center;
-            color: #d47a9e;
-            font-size: 0.8rem;
-            padding: 20px 0;
-            font-style: italic;
-            text-transform: uppercase;
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            font-weight: 500;
-        }
-
+        /* 响应式：小屏幕略微缩小卡片尺寸 */
         @media (max-width: 700px) {
-            .sidebar { width: 260px; }
-            .scanner { width: 40px; height: 40px; }
-            .marker-label { font-size: 0.7rem; padding: 5px 12px; white-space: nowrap; }
-            .leaflet-control-collection a { padding: 6px 12px; font-size: 12px; }
+            .photo-card {
+                width: 135px;
+                height: 175px;
+            }
+            .start-btn {
+                padding: 6px 20px;
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 550px) {
+            .photo-card {
+                width: 120px;
+                height: 156px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="sidebar" id="sidebar">
-        <button class="close-sidebar" onclick="closeSidebar()">✕</button>
-        <h2>✦ ARCHIVE</h2>
-        
-        <!-- DISCOVERED PATTERN SECTION -->
-        <div class="pattern-section">
-            <div class="pattern-title">
-                <span>DISCOVERED PATTERN</span>
-                <span id="pattern-total-count">0/4</span>
-            </div>
-            <div class="pattern-grid" id="pattern-grid">
-                <!-- 4개 분류가 JS로 동적 생성됨 -->
-            </div>
-        </div>
-
-        <!-- DISCOVERED LANDMARKS SECTION -->
-        <div class="sidebar-sub">
-            <span>DISCOVERED LANDMARKS</span>
-            <span id="discovered-count">0/50</span>
-        </div>
-        <div id="discovered-list" class="discovered-grid">
-            <div class="empty-message">MOVE SCANNER OVER BUILDINGS<br>CLICK TO COLLECT</div>
-        </div>
-    </div>
-
-    <div class="map-container" id="mapContainer">
-        <div id="leaflet-map"></div>
-        <div class="custom-markers-overlay" id="markersOverlay"></div>
-    </div>
+<div class="photo-gallery" id="photoGallery"></div>
+<div class="start-button-container">
+    <button class="start-btn" id="startBtn">✦ START TO DISCOVER ✦</button>
 </div>
 
-<div class="scanner" id="scanner"><div class="scan-wave"></div></div>
-<div class="instructions">DRAG & CLICK TO COLLECT</div>
-
 <script>
-    (function(){
+    (function() {
         // ============================================================
-        // 1. MAP INITIALIZATION - 严格固定边界
+        // 📷 完整60张卡片 + 超低浮动频率优化版
+        // 保留 pattern_01 ~ pattern_60 全部正面图
+        // 前21张保留 building_01 ~ building_21 的hover效果
+        // 
+        // 🎯 最新改进：卡片初始分布极度分散，避免拥挤
+        // 使用多轮迭代排斥算法 + 网格锚定，确保60张卡片均匀布满整个屏幕
         // ============================================================
-        const map = L.map('leaflet-map', {
-            center: [20, 0],
-            zoom: 2.7,
-            zoomControl: true,
-            worldCopyJump: false,
-            fadeAnimation: true,
-            zoomAnimation: true,
-            markerZoomAnimation: true,
-            maxBoundsViscosity: 1.0  // 完全固定边界
-        });
         
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OSM & CartoDB',
-            subdomains: 'abcd',
-            maxZoom: 10.0,
-            minZoom: 2.7,
-            noWrap: true,
-            errorTileUrl: ''
-        }).addTo(map);
+        const TOTAL_CARDS = 60;      // 完整60张卡片
+        const HOVER_COUNT = 21;      // 前21张有建筑hover效果
         
-        map.setMinZoom(2.7);
-        map.setMaxZoom(10.0);
-        
-        // 严格边界 - 在最小缩放时正好卡住世界地图边缘
-        // 这些值经过测试，确保无法拖动看到边界外的空白
-        const strictBounds = L.latLngBounds(L.latLng(-60, -170), L.latLng(85, 170));
-        map.setMaxBounds(strictBounds);
-        
-        // 额外：监听移动事件，强制保持在边界内
-        map.on('move', function() {
-            map.panInsideBounds(strictBounds, { animate: false });
-        });
-        
-        console.log("地图边界已严格固定，无法拖出世界范围");
-        
-        // ============================================================
-        // 2. COLLECTION BUTTON
-        // ============================================================
-        const CollectionControl = L.Control.extend({
-            options: { position: 'bottomleft' },
-            onAdd: function(map) {
-                const container = L.DomUtil.create('div', 'leaflet-control-collection');
-                const link = L.DomUtil.create('a', '', container);
-                link.innerHTML = 'COLLECTION';
-                link.href = '#';
-                link.onclick = function(e) {
-                    L.DomEvent.stopPropagation(e);
-                    toggleSidebar();
-                };
-                return container;
-            }
-        });
-        map.addControl(new CollectionControl());
-        
-        // ============================================================
-        // 3. BUILDINGS DATA (50 LANDMARKS)
-        // ============================================================
-        const buildingsData = [
-            { name: "Eiffel Tower", year: "1887", lat: 48.8584, lng: 2.2945 },
-            { name: "Louvre Pyramid", year: "1985", lat: 48.8606, lng: 2.3358 },
-            { name: "Sagrada Família", year: "1882", lat: 41.4036, lng: 2.1744 },
-            { name: "Casa Batlló", year: "1904", lat: 41.3917, lng: 2.1650 },
-            { name: "Casa Milà", year: "1906", lat: 41.3950, lng: 2.1647 },
-            { name: "Torre Agbar", year: "1999", lat: 41.4031, lng: 2.1907 },
-            { name: "The Gherkin", year: "2001", lat: 51.5145, lng: -0.0804 },
-            { name: "City Hall London", year: "1998", lat: 51.5148, lng: -0.0754 },
-            { name: "Parthenon", year: "447 BC", lat: 37.9715, lng: 23.7266 },
-            { name: "Pantheon", year: "126 AD", lat: 41.8986, lng: 12.4769 },
-            { name: "Turning Torso", year: "2001", lat: 55.6119, lng: 12.9729 },
-            { name: "Allianz Arena", year: "2002", lat: 48.2188, lng: 11.6245 },
-            { name: "BMW Welt", year: "2003", lat: 48.1768, lng: 11.5578 },
-            { name: "Kunsthaus Graz", year: "1999", lat: 47.0719, lng: 15.4426 },
-            { name: "Metropol Parasol", year: "2005", lat: 37.3927, lng: -5.9913 },
-            { name: "Eden Project", year: "1998", lat: 50.3617, lng: -4.7444 },
-            { name: "Selfridges Bham", year: "1999", lat: 52.4778, lng: -1.8946 },
-            { name: "Forbidden City", year: "1406", lat: 39.9163, lng: 116.3974 },
-            { name: "National Stadium", year: "2003", lat: 39.9915, lng: 116.3973 },
-            { name: "Water Cube", year: "2003", lat: 39.9965, lng: 116.3933 },
-            { name: "Galaxy SOHO", year: "2009", lat: 39.9167, lng: 116.4583 },
-            { name: "Shanghai Tower", year: "2008", lat: 31.2355, lng: 121.5014 },
-            { name: "DDP Seoul", year: "2009", lat: 37.5668, lng: 127.0091 },
-            { name: "Harbin Opera", year: "2010", lat: 45.7749, lng: 126.6305 },
-            { name: "Taichung Theater", year: "2005", lat: 24.1631, lng: 120.6469 },
-            { name: "Taj Mahal", year: "1632", lat: 27.1750, lng: 78.0421 },
-            { name: "Lotus Temple", year: "1980", lat: 28.5535, lng: 77.2588 },
-            { name: "Burj Khalifa", year: "2010", lat: 25.1972, lng: 55.2742 },
-            { name: "Cayan Tower", year: "2006", lat: 25.1960, lng: 55.2722 },
-            { name: "Khan Shatyr", year: "2006", lat: 51.1694, lng: 71.3916 },
-            { name: "Heydar Aliyev", year: "2007", lat: 40.3955, lng: 49.8673 },
-            { name: "Esplanade Theatres", year: "1996", lat: 1.326, lng: 103.8568 },
-            { name: "ArtScience Museum", year: "2006", lat: 1.2882, lng: 103.8518 },
-            { name: "Supertree Grove", year: "2006", lat: 1.2811, lng: 103.8635 },
-            { name: "Helix Bridge", year: "2007", lat: 1.2898, lng: 103.8642 },
-            { name: "Guggenheim Museum", year: "1943", lat: 40.7829, lng: -73.9590 },
-            { name: "Vessel NYC", year: "2017", lat: 40.7480, lng: -74.0020 },
-            { name: "Snowflake Motel", year: "1960", lat: 36.1750, lng: -114.0734 },
-            { name: "Milwaukee Art Museum", year: "1994", lat: 43.0399, lng: -87.8967 },
-            { name: "Seattle Library", year: "1998", lat: 47.6062, lng: -122.3321 },
-            { name: "Disney Concert Hall", year: "1999", lat: 34.0549, lng: -118.2500 },
-            { name: "Apple Park", year: "2013", lat: 37.3348, lng: -122.0093 },
-            { name: "Museo Soumaya", year: "2011", lat: 19.4406, lng: -99.2047 },
-            { name: "Sydney Opera House", year: "1959", lat: -33.8568, lng: 151.2153 },
-            { name: "Federation Square", year: "1997", lat: -37.8183, lng: 144.9680 }
-        ];
-        
-        // ============================================================
-        // 4. PATTERN DATA
-        // ============================================================
-        const patternsData = [
-            { id: "pattern_a", name: "SYMMETRY & TESSELATION", buildingNames: ["Eiffel Tower", "Parthenon", "Pantheon", "Taj Mahal", "Forbidden City"] },
-            { id: "pattern_b", name: "SPIRAL & CURVE", buildingNames: ["Burj Khalifa", "Shanghai Tower", "Turning Torso", "The Gherkin", "Cayan Tower", "Galaxy SOHO"] },
-            { id: "pattern_c", name: "BUBBLE & CELL", buildingNames: ["Sydney Opera House", "Heydar Aliyev", "Harbin Opera", "Kunsthaus Graz", "Taichung Theater"] },
-            { id: "pattern_d", name: "BRANCH & FRACTAL", buildingNames: ["Vessel NYC", "Apple Park", "Museo Soumaya", "DDP Seoul", "The Gherkin"] }
-        ];
-        
-        const patternBuildingSets = patternsData.map(pattern => {
-            const validNames = pattern.buildingNames.filter(name => buildingsData.some(b => b.name === name));
-            return new Set(validNames);
-        });
-        let patternCompleted = new Array(patternsData.length).fill(false);
-        let patternElements = [];
-        
-        // ============================================================
-        // 5. GLOBAL VARIABLES
-        // ============================================================
-        const scanner = document.getElementById('scanner');
-        const markersOverlay = document.getElementById('markersOverlay');
-        const sidebar = document.getElementById('sidebar');
-        const discoveredList = document.getElementById('discovered-list');
-        const discoveredCountSpan = document.getElementById('discovered-count');
-        const patternGrid = document.getElementById('pattern-grid');
-        const patternTotalSpan = document.getElementById('pattern-total-count');
-        const SCAN_RADIUS = 20;
-        
-        let discoveredBuildings = new Set();
-        let discoveredBuildingsList = [];
-        let markerElementsMap = new Map();
-        
-        // 辅助函数：将年份字符串转换为可排序的数字
-        function parseYearToNumber(yearStr) {
-            if (yearStr.includes("BC")) {
-                const num = parseInt(yearStr);
-                return -num;
-            } else if (yearStr.includes("AD")) {
-                const num = parseInt(yearStr);
-                return num;
+        // 构建图片列表
+        const IMAGES_LIST = [];
+        for (let i = 1; i <= TOTAL_CARDS; i++) {
+            const patternIndex = i.toString().padStart(2, '0');
+            const frontPath = `images/pattern_${patternIndex}.jpg`;
+            
+            if (i <= HOVER_COUNT) {
+                const buildingIndex = i.toString().padStart(2, '0');
+                const hoverPath = `images/building_${buildingIndex}.jpg`;
+                IMAGES_LIST.push({ front: frontPath, hover: hoverPath, hasHover: true });
             } else {
-                return parseInt(yearStr);
+                IMAGES_LIST.push({ front: frontPath, hover: null, hasHover: false });
             }
         }
         
-        // 辅助函数：重新排序并刷新侧边栏列表
-        function refreshSortedLandmarksList() {
-            discoveredBuildingsList.sort((a, b) => {
-                const yearA = parseYearToNumber(a.year);
-                const yearB = parseYearToNumber(b.year);
-                return yearA - yearB;
+        // 🎯 超级分散算法：基于 Poisson Disc 采样思想的简化版本
+        // 确保每个卡片之间保持足够距离，整体均匀分布
+        
+        function getSuperDispersedPositions(cardsConfig, margin = 20) {
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const positions = [];
+            
+            // 计算每张卡片的尺寸（可能有轻微差异）
+            const cardSizes = cardsConfig.map((cfg, idx) => {
+                let w = 170;
+                let h = 220;
+                if (idx % 7 === 0) w = 173;
+                if (idx % 9 === 0) h = 223;
+                return { width: w, height: h };
             });
             
-            discoveredList.innerHTML = '';
-            if (discoveredBuildingsList.length === 0) {
-                const emptyMsg = document.createElement('div');
-                emptyMsg.className = 'empty-message';
-                emptyMsg.innerText = 'MOVE SCANNER OVER BUILDINGS\nCLICK TO COLLECT';
-                discoveredList.appendChild(emptyMsg);
-            } else {
-                for (let building of discoveredBuildingsList) {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'sidebar-item';
-                    itemDiv.innerHTML = `<span class="item-name">${building.name.toUpperCase()}</span><span class="item-year">${building.year}</span>`;
-                    discoveredList.appendChild(itemDiv);
-                }
-            }
-        }
-        
-        // ============================================================
-        // 6. PATTERN FUNCTIONS
-        // ============================================================
-        function getCollectedCountForPattern(patternIdx) {
-            const buildingSet = patternBuildingSets[patternIdx];
-            if (buildingSet.size === 0) return 0;
-            let count = 0;
-            for (let buildingName of buildingSet) {
-                for (let discovered of discoveredBuildings) {
-                    if (discovered.startsWith(buildingName + "|")) {
-                        count++;
-                        break;
+            // 第一步：使用网格法确定大致区域（10x6网格，60个格子，每个格子内放一个）
+            const gridCols = 10;
+            const gridRows = 6;
+            const cellWidth = (screenWidth - margin * 2) / gridCols;
+            const cellHeight = (screenHeight - margin * 2) / gridRows;
+            
+            // 为每个卡片分配一个网格位置，并打乱顺序让分布更自然
+            const gridIndices = [];
+            for (let row = 0; row < gridRows; row++) {
+                for (let col = 0; col < gridCols; col++) {
+                    if (gridIndices.length < TOTAL_CARDS) {
+                        gridIndices.push({ row, col });
                     }
                 }
             }
-            return count;
-        }
-        
-        function updatePatternCompletion() {
-            let totalCompleted = 0;
-            for (let i = 0; i < patternsData.length; i++) {
-                const total = patternBuildingSets[i].size;
-                if (total === 0) continue;
-                const collected = getCollectedCountForPattern(i);
-                const isCompleted = (collected === total);
-                if (patternCompleted[i] !== isCompleted) {
-                    patternCompleted[i] = isCompleted;
-                }
-                if (isCompleted) totalCompleted++;
-                if (patternElements[i]) {
-                    const elem = patternElements[i];
-                    elem.countSpan.textContent = `${collected}/${total}`;
-                    if (isCompleted) elem.element.classList.add('completed');
-                    else elem.element.classList.remove('completed');
-                }
+            // Fisher-Yates 打乱，让卡片随机分配到网格中
+            for (let i = gridIndices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gridIndices[i], gridIndices[j]] = [gridIndices[j], gridIndices[i]];
             }
-            patternTotalSpan.textContent = `${totalCompleted}/${patternsData.length}`;
-        }
-        
-        function createPatternUI() {
-            patternGrid.innerHTML = '';
-            patternElements = [];
-            patternsData.forEach((pattern, idx) => {
-                const totalCount = patternBuildingSets[idx].size;
-                const collectedCount = getCollectedCountForPattern(idx);
-                const isCompleted = (totalCount > 0 && collectedCount === totalCount);
+            
+            // 第二步：基于网格生成初始位置，并在网格内随机偏移，同时避开中央按钮区域
+            const centerX = screenWidth / 2;
+            const centerY = screenHeight / 2;
+            const minDistToCenter = 130; // 避开中心按钮
+            
+            for (let i = 0; i < TOTAL_CARDS; i++) {
+                const gridPos = gridIndices[i];
+                const cardW = cardSizes[i].width;
+                const cardH = cardSizes[i].height;
                 
-                const div = document.createElement('div');
-                div.className = 'pattern-item' + (isCompleted ? ' completed' : '');
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'pattern-name';
-                nameSpan.textContent = pattern.name;
-                const countSpan = document.createElement('span');
-                countSpan.className = 'pattern-count';
-                countSpan.textContent = `${collectedCount}/${totalCount}`;
-                div.appendChild(nameSpan);
-                div.appendChild(countSpan);
-                patternGrid.appendChild(div);
-                patternElements.push({ element: div, countSpan: countSpan, idx: idx });
-            });
-            updatePatternCompletion();
-        }
-        createPatternUI();
-        
-        // ============================================================
-        // 7. SIDEBAR & COLLECTION
-        // ============================================================
-        function updateSidebarUI() {
-            const count = discoveredBuildings.size;
-            discoveredCountSpan.innerText = count + '/50';
-            updatePatternCompletion();
-        }
-        
-        function addToCollection(marker, name, year) {
-            const id = `${name}|${year}`;
-            if (discoveredBuildings.has(id)) return false;
-            
-            discoveredBuildings.add(id);
-            discoveredBuildingsList.push({ name: name, year: year });
-            
-            marker.classList.add('collected');
-            marker.classList.add('revealed');
-            const existingLabel = marker.querySelector('.marker-label');
-            if (existingLabel) existingLabel.remove();
-            
-            refreshSortedLandmarksList();
-            updateSidebarUI();
-            return true;
-        }
-        
-        // ============================================================
-        // 8. MARKER & SCANNER
-        // ============================================================
-        function showFloatingLabel(marker) {
-            if (marker.classList.contains('collected')) return;
-            let label = marker.querySelector('.marker-label');
-            if (!label) {
-                label = document.createElement('div');
-                label.className = 'marker-label';
-                label.innerHTML = `<span class="name">${marker.dataset.name.toUpperCase()}</span><span class="year">${marker.dataset.year}</span>`;
-                marker.appendChild(label);
+                // 网格基础位置
+                let baseX = margin + gridPos.col * cellWidth;
+                let baseY = margin + gridPos.row * cellHeight;
+                
+                // 在网格内随机偏移（偏移范围使卡片不严格对齐，更自然）
+                const offsetX = (Math.random() - 0.5) * cellWidth * 0.6;
+                const offsetY = (Math.random() - 0.5) * cellHeight * 0.6;
+                
+                let x = baseX + offsetX;
+                let y = baseY + offsetY;
+                
+                // 边界约束
+                x = Math.min(Math.max(x, margin), screenWidth - cardW - margin);
+                y = Math.min(Math.max(y, margin), screenHeight - cardH - margin);
+                
+                // 避开中心按钮区域
+                const distToCenter = Math.hypot(x + cardW/2 - centerX, y + cardH/2 - centerY);
+                if (distToCenter < minDistToCenter) {
+                    // 向外推离中心
+                    const angle = Math.atan2(y + cardH/2 - centerY, x + cardW/2 - centerX);
+                    const pushDist = minDistToCenter - distToCenter + 15;
+                    x += Math.cos(angle) * pushDist;
+                    y += Math.sin(angle) * pushDist;
+                    x = Math.min(Math.max(x, margin), screenWidth - cardW - margin);
+                    y = Math.min(Math.max(y, margin), screenHeight - cardH - margin);
+                }
+                
+                positions.push({ x, y, width: cardW, height: cardH });
             }
-            label.classList.add('visible');
-        }
-        
-        function hideFloatingLabel(marker) {
-            const label = marker.querySelector('.marker-label');
-            if (label) label.classList.remove('visible');
-        }
-        
-        function updateAllMarkersPosition() {
-            for (let [id, marker] of markerElementsMap.entries()) {
-                const lat = parseFloat(marker.dataset.lat);
-                const lng = parseFloat(marker.dataset.lng);
-                const point = map.latLngToContainerPoint([lat, lng]);
-                marker.style.left = point.x + 'px';
-                marker.style.top = point.y + 'px';
+            
+            // 第三步：迭代排斥算法 - 让卡片之间保持最小距离
+            // 这个算法会多次迭代，将靠得太近的卡片互相推离
+            const minDistance = 185; // 最小间距（卡片中心之间的距离）
+            const iterations = 35;    // 迭代次数足够让分布均匀
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                let moved = false;
+                
+                for (let i = 0; i < positions.length; i++) {
+                    const posA = positions[i];
+                    const centerAx = posA.x + posA.width / 2;
+                    const centerAy = posA.y + posA.height / 2;
+                    
+                    for (let j = i + 1; j < positions.length; j++) {
+                        const posB = positions[j];
+                        const centerBx = posB.x + posB.width / 2;
+                        const centerBy = posB.y + posB.height / 2;
+                        
+                        const dx = centerAx - centerBx;
+                        const dy = centerAy - centerBy;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist < minDistance && dist > 0.01) {
+                            // 需要推开
+                            const overlap = minDistance - dist;
+                            const angle = Math.atan2(dy, dx);
+                            const pushX = Math.cos(angle) * overlap * 0.5;
+                            const pushY = Math.sin(angle) * overlap * 0.5;
+                            
+                            // 移动两个卡片
+                            posA.x += pushX;
+                            posA.y += pushY;
+                            posB.x -= pushX;
+                            posB.y -= pushY;
+                            
+                            // 边界约束
+                            posA.x = Math.min(Math.max(posA.x, margin), screenWidth - posA.width - margin);
+                            posA.y = Math.min(Math.max(posA.y, margin), screenHeight - posA.height - margin);
+                            posB.x = Math.min(Math.max(posB.x, margin), screenWidth - posB.width - margin);
+                            posB.y = Math.min(Math.max(posB.y, margin), screenHeight - posB.height - margin);
+                            
+                            moved = true;
+                        }
+                    }
+                }
+                
+                // 如果没有移动，提前退出
+                if (!moved) break;
             }
-        }
-        
-        function updateMarkersByScanner(mouseX, mouseY) {
-            for (let [id, marker] of markerElementsMap.entries()) {
-                if (marker.classList.contains('collected')) continue;
-                const rect = marker.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                const distance = Math.hypot(mouseX - centerX, mouseY - centerY);
-                if (distance < SCAN_RADIUS) {
-                    marker.classList.add('revealed');
-                    showFloatingLabel(marker);
-                } else {
-                    marker.classList.remove('revealed');
-                    hideFloatingLabel(marker);
+            
+            // 第四步：最终边界检查 + 避开中心区域（二次确保）
+            for (let i = 0; i < positions.length; i++) {
+                const pos = positions[i];
+                pos.x = Math.min(Math.max(pos.x, margin), screenWidth - pos.width - margin);
+                pos.y = Math.min(Math.max(pos.y, margin), screenHeight - pos.height - margin);
+                
+                // 再次避开中心
+                const distToCenter = Math.hypot(pos.x + pos.width/2 - centerX, pos.y + pos.height/2 - centerY);
+                if (distToCenter < minDistToCenter) {
+                    const angle = Math.atan2(pos.y + pos.height/2 - centerY, pos.x + pos.width/2 - centerX);
+                    const pushDist = minDistToCenter - distToCenter + 10;
+                    pos.x += Math.cos(angle) * pushDist;
+                    pos.y += Math.sin(angle) * pushDist;
+                    pos.x = Math.min(Math.max(pos.x, margin), screenWidth - pos.width - margin);
+                    pos.y = Math.min(Math.max(pos.y, margin), screenHeight - pos.height - margin);
                 }
             }
+            
+            return positions;
         }
         
-        function onMarkerClick(e) {
-            e.stopPropagation();
-            const marker = e.currentTarget;
-            const name = marker.dataset.name;
-            const year = marker.dataset.year;
-            if (!marker.classList.contains('revealed') && !marker.classList.contains('collected')) {
-                const tip = document.createElement('div');
-                tip.innerText = "MOVE SCANNER OVER BUILDING FIRST!";
-                tip.style.cssText = "position:fixed; background:#ffecf0; padding:4px 12px; border-radius:40px; font-size:12px; color:#c71585; z-index:9999; pointer-events:none; font-family:'Inter',sans-serif;";
-                tip.style.left = (e.clientX + 20) + "px";
-                tip.style.top = (e.clientY - 20) + "px";
-                document.body.appendChild(tip);
-                setTimeout(() => tip.remove(), 800);
+        const gallery = document.getElementById('photoGallery');
+        const cards = [];
+        const fragment = document.createDocumentFragment();
+        
+        // 准备卡片配置（用于分散算法）
+        const cardsConfig = [];
+        for (let idx = 0; idx < TOTAL_CARDS; idx++) {
+            let w = 170, h = 220;
+            if (idx % 7 === 0) w = 173;
+            if (idx % 9 === 0) h = 223;
+            cardsConfig.push({ width: w, height: h });
+        }
+        
+        // 获取超级分散的位置
+        const dispersedPositions = getSuperDispersedPositions(cardsConfig, 18);
+        
+        // 创建所有卡片
+        IMAGES_LIST.forEach((imgData, idx) => {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            
+            if (imgData.hasHover) {
+                card.classList.add('hover-enabled');
+            }
+            
+            // 设置尺寸
+            let widthVar = 170;
+            let heightVar = 220;
+            if (idx % 7 === 0) widthVar = 173;
+            if (idx % 9 === 0) heightVar = 223;
+            
+            card.style.width = `${widthVar}px`;
+            card.style.height = `${heightVar}px`;
+            
+            // 使用计算好的分散位置
+            const pos = dispersedPositions[idx];
+            const x = pos.x;
+            const y = pos.y;
+            const rotate = (Math.random() - 0.5) * 14;
+            
+            // 使用 translate3d 开启 GPU 加速
+            card.style.left = '0px';
+            card.style.top = '0px';
+            card.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rotate}deg)`;
+            const baseZIndex = Math.floor(Math.random() * 30) + 5;
+            card.style.zIndex = baseZIndex;
+            
+            // 正面图片
+            const frontImg = document.createElement('img');
+            frontImg.src = imgData.front;
+            frontImg.alt = `Pattern ${idx + 1}`;
+            frontImg.classList.add('front-img');
+            frontImg.loading = 'lazy';
+            card.appendChild(frontImg);
+            
+            // 仅当前21张才创建 hover 图片
+            if (imgData.hasHover && imgData.hover) {
+                const hoverImg = document.createElement('img');
+                hoverImg.src = imgData.hover;
+                hoverImg.alt = `Building ${idx + 1}`;
+                hoverImg.classList.add('hover-img');
+                hoverImg.loading = 'lazy';
+                card.appendChild(hoverImg);
+                hoverImg.onerror = () => console.warn(`图片加载失败: ${imgData.hover}`);
+            }
+            
+            frontImg.onerror = () => console.warn(`图片加载失败: ${imgData.front}`);
+            
+            fragment.appendChild(card);
+            
+            cards.push({
+                el: card,
+                width: widthVar,
+                height: heightVar,
+                isDragging: false,
+                dragStartX: 0,
+                dragStartY: 0,
+                currentX: x,
+                currentY: y,
+                currentRotate: rotate,
+                originalZIndex: baseZIndex,
+                // 超低浮动速度：极缓慢漂移
+                vx: (Math.random() - 0.5) * 3.0,
+                vy: (Math.random() - 0.5) * 3.0,
+            });
+        });
+        
+        gallery.appendChild(fragment);
+        
+        // 动画参数
+        let lastFrameTime = 0;
+        const TARGET_FPS = 24;
+        const FRAME_INTERVAL = 1000 / TARGET_FPS;
+        
+        const DAMP_FACTOR = 0.998;
+        const BOUND_DAMP = 0.96;
+        const MIN_SPEED = 0.3;
+        const MAX_SPEED = 5.0;
+        
+        function updateCardPosition(card) {
+            card.el.style.transform = `translate3d(${card.currentX}px, ${card.currentY}px, 0) rotate(${card.currentRotate}deg)`;
+        }
+        
+        function handleBoundaries(card) {
+            let { currentX, currentY, vx, vy, width, height } = card;
+            let bounced = false;
+            
+            const leftBound = -width + 12;
+            const rightBound = window.innerWidth - 12;
+            const topBound = -height + 12;
+            const bottomBound = window.innerHeight - 12;
+            
+            if (currentX <= leftBound) {
+                currentX = leftBound;
+                vx = Math.abs(vx) * BOUND_DAMP;
+                if (vx < MIN_SPEED) vx = MIN_SPEED;
+                bounced = true;
+            } else if (currentX >= rightBound) {
+                currentX = rightBound;
+                vx = -Math.abs(vx) * BOUND_DAMP;
+                if (Math.abs(vx) < MIN_SPEED) vx = -MIN_SPEED;
+                bounced = true;
+            }
+            
+            if (currentY <= topBound) {
+                currentY = topBound;
+                vy = Math.abs(vy) * BOUND_DAMP;
+                if (vy < MIN_SPEED) vy = MIN_SPEED;
+                bounced = true;
+            } else if (currentY >= bottomBound) {
+                currentY = bottomBound;
+                vy = -Math.abs(vy) * BOUND_DAMP;
+                if (Math.abs(vy) < MIN_SPEED) vy = -MIN_SPEED;
+                bounced = true;
+            }
+            
+            card.currentX = currentX;
+            card.currentY = currentY;
+            card.vx = vx;
+            card.vy = vy;
+            
+            return bounced;
+        }
+        
+        let animationActive = true;
+        let frameCount = 0;
+        
+        function animateFloating(timestamp) {
+            if (!animationActive) return;
+            
+            if (timestamp - lastFrameTime < FRAME_INTERVAL) {
+                requestAnimationFrame(animateFloating);
                 return;
             }
-            const added = addToCollection(marker, name, year);
-            if (added) {
-                marker.style.transform = "translate(-50%, -50%) scale(1.2)";
-                setTimeout(() => {
-                    if(marker) marker.style.transform = "translate(-50%, -50%) scale(1)";
-                }, 150);
-                hideFloatingLabel(marker);
-                if (discoveredBuildings.size === 1) sidebar.classList.add('active');
-                else if (!sidebar.classList.contains('active')) sidebar.classList.add('active');
-            }
-        }
-        
-        function createAllMarkers() {
-            markersOverlay.innerHTML = '';
-            markerElementsMap.clear();
-            buildingsData.forEach(b => {
-                const markerDiv = document.createElement('div');
-                markerDiv.className = 'architecture-marker';
-                if (discoveredBuildings.has(`${b.name}|${b.year}`)) {
-                    markerDiv.classList.add('collected');
-                    markerDiv.classList.add('revealed');
+            
+            const delta = Math.min(0.05, (timestamp - lastFrameTime) / 1000);
+            lastFrameTime = timestamp;
+            
+            for (let i = 0; i < cards.length; i++) {
+                const card = cards[i];
+                if (card.isDragging) continue;
+                
+                let newX = card.currentX + card.vx * delta;
+                let newY = card.currentY + card.vy * delta;
+                
+                card.currentX = newX;
+                card.currentY = newY;
+                
+                const bounced = handleBoundaries(card);
+                
+                if (frameCount % 60 === 0 && !bounced) {
+                    if (Math.random() < 0.3) {
+                        card.vx += (Math.random() - 0.5) * 0.8;
+                        card.vy += (Math.random() - 0.5) * 0.8;
+                        card.vx = Math.min(Math.max(card.vx, -MAX_SPEED), MAX_SPEED);
+                        card.vy = Math.min(Math.max(card.vy, -MAX_SPEED), MAX_SPEED);
+                    }
                 }
-                markerDiv.dataset.name = b.name;
-                markerDiv.dataset.year = b.year;
-                markerDiv.dataset.lat = b.lat;
-                markerDiv.dataset.lng = b.lng;
-                const point = map.latLngToContainerPoint([b.lat, b.lng]);
-                markerDiv.style.left = point.x + 'px';
-                markerDiv.style.top = point.y + 'px';
-                markerDiv.addEventListener('click', onMarkerClick);
-                markersOverlay.appendChild(markerDiv);
-                markerElementsMap.set(`${b.name}|${b.year}`, markerDiv);
-            });
+                
+                if (frameCount % 2 === 0) {
+                    card.vx *= DAMP_FACTOR;
+                    card.vy *= DAMP_FACTOR;
+                }
+                
+                updateCardPosition(card);
+            }
+            
+            frameCount++;
+            requestAnimationFrame(animateFloating);
         }
         
-        let isUpdating = false;
-        function throttledUpdateMarkers() {
-            if (isUpdating) return;
-            isUpdating = true;
-            requestAnimationFrame(() => {
-                updateAllMarkersPosition();
-                isUpdating = false;
-            });
+        // 拖拽系统（拖拽时提升 zIndex）
+        let currentHighestZ = 1000;
+        function getNextHighestZ() {
+            currentHighestZ++;
+            return currentHighestZ;
         }
         
-        map.on('moveend', throttledUpdateMarkers);
-        map.on('zoomend', throttledUpdateMarkers);
+        function attachDragEvents(cardObj) {
+            const el = cardObj.el;
+            
+            const onPointerDown = (e) => {
+                if (e.target.closest('.start-btn')) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                cardObj.isDragging = true;
+                const newZ = getNextHighestZ();
+                el.style.zIndex = newZ;
+                el.style.cursor = 'grabbing';
+                el.style.transition = 'none';
+                
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+                
+                cardObj.dragStartX = clientX - cardObj.currentX;
+                cardObj.dragStartY = clientY - cardObj.currentY;
+                cardObj.vx *= 0.3;
+                cardObj.vy *= 0.3;
+            };
+            
+            const onPointerMove = (e) => {
+                if (!cardObj.isDragging) return;
+                e.preventDefault();
+                
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+                
+                let newX = clientX - cardObj.dragStartX;
+                let newY = clientY - cardObj.dragStartY;
+                
+                const leftBound = -cardObj.width + 12;
+                const rightBound = window.innerWidth - 12;
+                const topBound = -cardObj.height + 12;
+                const bottomBound = window.innerHeight - 12;
+                
+                newX = Math.min(Math.max(newX, leftBound), rightBound);
+                newY = Math.min(Math.max(newY, topBound), bottomBound);
+                
+                cardObj.currentX = newX;
+                cardObj.currentY = newY;
+                updateCardPosition(cardObj);
+                cardObj.vx *= 0.95;
+                cardObj.vy *= 0.95;
+            };
+            
+            const onPointerUp = () => {
+                if (cardObj.isDragging) {
+                    cardObj.isDragging = false;
+                    el.style.cursor = 'grab';
+                    el.style.transition = '';
+                    
+                    if (Math.abs(cardObj.vx) < 0.5 && Math.abs(cardObj.vy) < 0.5) {
+                        cardObj.vx += (Math.random() - 0.5) * 1.2;
+                        cardObj.vy += (Math.random() - 0.5) * 1.2;
+                        cardObj.vx = Math.min(Math.max(cardObj.vx, -MAX_SPEED), MAX_SPEED);
+                        cardObj.vy = Math.min(Math.max(cardObj.vy, -MAX_SPEED), MAX_SPEED);
+                    }
+                }
+            };
+            
+            el.addEventListener('pointerdown', onPointerDown);
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+        }
+        
+        cards.forEach(card => attachDragEvents(card));
+        
+        lastFrameTime = performance.now();
+        animationActive = true;
+        requestAnimationFrame(animateFloating);
+        
+        let resizeTimeout;
         window.addEventListener('resize', () => {
-            setTimeout(throttledUpdateMarkers, 50);
-        });
-        
-        createAllMarkers();
-        throttledUpdateMarkers();
-        updateSidebarUI();
-        
-        // ============================================================
-        // 9. SCANNER EVENTS - 完全恢复scanner功能
-        // ============================================================
-        function handleMouseMove(e) {
-            const x = e.clientX, y = e.clientY;
-            scanner.style.left = x + 'px';
-            scanner.style.top = y + 'px';
-            updateMarkersByScanner(x, y);
-        }
-        document.addEventListener('mousemove', handleMouseMove);
-        
-        function handleTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            if(touch) {
-                scanner.style.left = touch.clientX + 'px';
-                scanner.style.top = touch.clientY + 'px';
-                updateMarkersByScanner(touch.clientX, touch.clientY);
-            }
-        }
-        function handleTouchStart(e) {
-            const touch = e.touches[0];
-            if(touch) {
-                scanner.style.left = touch.clientX + 'px';
-                scanner.style.top = touch.clientY + 'px';
-                updateMarkersByScanner(touch.clientX, touch.clientY);
-            }
-        }
-        document.addEventListener('touchmove', handleTouchMove, { passive: false });
-        document.addEventListener('touchstart', handleTouchStart);
-        
-        // ============================================================
-        // 10. SIDEBAR TOGGLE
-        // ============================================================
-        function toggleSidebar() {
-            sidebar.classList.toggle('active');
-        }
-        window.closeSidebar = function() {
-            sidebar.classList.remove('active');
-        };
-        document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('active')) {
-                const isSidebar = sidebar.contains(e.target);
-                const isMarker = e.target.classList?.contains('architecture-marker');
-                const isCollectionBtn = e.target.closest('.leaflet-control-collection');
-                if (!isSidebar && !isMarker && !isCollectionBtn) {
-                    sidebar.classList.remove('active');
+            if (resizeTimeout) clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                for (let i = 0; i < cards.length; i++) {
+                    const card = cards[i];
+                    const leftBound = -card.width + 12;
+                    const rightBound = window.innerWidth - 12;
+                    const topBound = -card.height + 12;
+                    const bottomBound = window.innerHeight - 12;
+                    
+                    let changed = false;
+                    if (card.currentX < leftBound) {
+                        card.currentX = leftBound;
+                        changed = true;
+                    } else if (card.currentX > rightBound) {
+                        card.currentX = rightBound;
+                        changed = true;
+                    }
+                    
+                    if (card.currentY < topBound) {
+                        card.currentY = topBound;
+                        changed = true;
+                    } else if (card.currentY > bottomBound) {
+                        card.currentY = bottomBound;
+                        changed = true;
+                    }
+                    
+                    if (changed) {
+                        updateCardPosition(card);
+                        if (card.currentX === leftBound || card.currentX === rightBound) {
+                            card.vx = -card.vx * 0.5;
+                        }
+                        if (card.currentY === topBound || card.currentY === bottomBound) {
+                            card.vy = -card.vy * 0.5;
+                        }
+                    }
                 }
+            }, 150);
+        });
+        
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => {
+                window.location.href = 'map.html';
+            });
+        }
+        
+        cards.forEach(card => {
+            card.el.style.cursor = 'grab';
+        });
+        
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                animationActive = false;
+            } else {
+                animationActive = true;
+                lastFrameTime = performance.now();
+                requestAnimationFrame(animateFloating);
             }
         });
         
-        console.log("地图边界已固定 | scanner功能正常 | 建筑列表按年份排序");
+        console.log(`✨ 超级分散版已启动 | 卡片数量: ${cards.length}张 | 已使用网格+排斥算法确保均匀分布 | 拖拽自动前置`);
     })();
 </script>
 </body>
